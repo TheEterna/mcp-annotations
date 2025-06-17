@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import com.logaritex.mcp.annotation.McpArg;
 import com.logaritex.mcp.annotation.McpPrompt;
 import com.logaritex.mcp.method.prompt.SyncMcpPromptMethodCallback;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
@@ -56,15 +55,13 @@ public class SyncMcpPromptMethodCallbackTests {
 		}
 
 		@McpPrompt(name = "individual-args", description = "A prompt with individual arguments")
-		public GetPromptResult getPromptWithIndividualArgs(@McpArg(name = "name", description = "The user's name", required = true) String name,
-														   @McpArg(name = "age", description = "The user's age", required = true) Integer age) {
+		public GetPromptResult getPromptWithIndividualArgs(String name, Integer age) {
 			return new GetPromptResult("Individual arguments prompt", List.of(new PromptMessage(Role.ASSISTANT,
 					new TextContent("Hello " + name + ", you are " + age + " years old"))));
 		}
 
 		@McpPrompt(name = "mixed-args", description = "A prompt with mixed argument types")
-		public GetPromptResult getPromptWithMixedArgs(McpSyncServerExchange exchange,@McpArg(name = "name", description = "The user's name", required = true) String name,
-													  @McpArg(name = "age", description = "The user's age", required = true) Integer age) {
+		public GetPromptResult getPromptWithMixedArgs(McpSyncServerExchange exchange, String name, Integer age) {
 			return new GetPromptResult("Mixed arguments prompt", List.of(new PromptMessage(Role.ASSISTANT,
 					new TextContent("Hello " + name + ", you are " + age + " years old (with exchange)"))));
 		}

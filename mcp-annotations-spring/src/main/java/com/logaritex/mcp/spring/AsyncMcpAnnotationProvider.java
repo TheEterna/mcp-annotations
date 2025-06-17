@@ -19,8 +19,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Function;
 
-import com.logaritex.mcp.provider.AsyncMcpLoggingConsumerProvider;
-import com.logaritex.mcp.provider.AsyncMcpSamplingProvider;
+import com.logaritex.mcp.provider.*;
+import io.modelcontextprotocol.server.McpServerFeatures.AsyncResourceSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.AsyncPromptSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.AsyncCompletionSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CreateMessageRequest;
 import io.modelcontextprotocol.spec.McpSchema.CreateMessageResult;
 import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
@@ -61,7 +63,47 @@ public class AsyncMcpAnnotationProvider {
 		}
 
 	}
+	private static class SpringAiAsyncMcpResourceProvider extends AsyncMcpResourceProvider {
 
+		public SpringAiAsyncMcpResourceProvider(List<Object> resourceObjects) {
+			super(resourceObjects);
+		}
+
+		@Override
+		protected Method[] doGetClassMethods(Object bean) {
+			return ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+		}
+
+	}
+
+	private static class SpringAiAsyncMcpPromptProvider extends AsyncMcpPromptProvider {
+
+		public SpringAiAsyncMcpPromptProvider(List<Object> promptObjects) {
+			super(promptObjects);
+		}
+
+		@Override
+		protected Method[] doGetClassMethods(Object bean) {
+			return ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+		}
+
+	}
+
+	private static class SpringAiAsyncMcpCompletionProvider extends AsyncMcpCompletionProvider {
+
+		public SpringAiAsyncMcpCompletionProvider(List<Object> completionObjects) {
+			super(completionObjects);
+		}
+
+		@Override
+		protected Method[] doGetClassMethods(Object bean) {
+			return ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+		}
+
+	}
 	public static List<Function<LoggingMessageNotification, Mono<Void>>> createAsyncLoggingConsumers(
 			List<Object> loggingObjects) {
 		return new SpringAiAsyncMcpLoggingConsumerProvider(loggingObjects).getLoggingConsumers();
@@ -71,5 +113,14 @@ public class AsyncMcpAnnotationProvider {
 			List<Object> samplingObjects) {
 		return new SpringAiAsyncMcpSamplingProvider(samplingObjects).getSamplingHandler();
 	}
+	public static List<AsyncResourceSpecification> createAsyncResourceSpecifications(List<Object> resourceObjects) {
+		return new SpringAiAsyncMcpResourceProvider(resourceObjects).getResourceSpecifications();
+	}
 
+	public static List<AsyncPromptSpecification> createAsyncPromptSpecification(List<Object> promptObjects) {
+		return new SpringAiAsyncMcpPromptProvider(promptObjects).getPromptSpecifications();
+	}
+	public static List<AsyncCompletionSpecification> createAsyncCompletionSpecification(List<Object> completionObjects) {
+		return new SpringAiAsyncMcpCompletionProvider(completionObjects).getCompleteSpecifications();
+	}
 }

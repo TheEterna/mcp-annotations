@@ -13,18 +13,21 @@ import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptResult;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Class for creating BiFunction callbacks around prompt methods.
+ * 用于创建围绕提示方法的BiFunction回调的类。
  *
- * This class provides a way to convert methods annotated with {@link McpPrompt} into
- * callback functions that can be used to handle prompt requests. It supports various
- * method signatures and return types.
+ * 该类提供了一种将使用{@link McpPrompt}注解的方法转换为可用于处理提示请求的回调函数的方式。
+ * 它支持各种方法签名和返回类型。
  *
  * @author Christian Tzolov
  */
 public final class SyncMcpPromptMethodCallback extends AbstractMcpPromptMethodCallback
 		implements BiFunction<McpSyncServerExchange, GetPromptRequest, GetPromptResult> {
+
+	Logger logger = LoggerFactory.getLogger(SyncMcpPromptMethodCallback.class);
 
 	private SyncMcpPromptMethodCallback(Builder builder) {
 		super(builder.method, builder.bean, builder.prompt);

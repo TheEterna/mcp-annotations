@@ -27,9 +27,7 @@ public @interface McpPrompt {
 	String name() default "";
 
 	/**
-	 * A description of what this resource represents. This can be used by clients to
-	 * improve the LLM's understanding of available resources. It can be thought of like a
-	 * "hint" to the model.
+	 * 该资源的描述信息，用于帮助客户端提升LLM对可用资源的理解。可以将其视为给模型的一个“提示”。
 	 */
 	String description() default "";
 

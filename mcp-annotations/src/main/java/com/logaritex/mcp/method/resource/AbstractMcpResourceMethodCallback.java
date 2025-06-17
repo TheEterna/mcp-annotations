@@ -4,6 +4,7 @@
 
 package com.logaritex.mcp.method.resource;
 
+import java.io.Serial;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -18,11 +19,9 @@ import io.modelcontextprotocol.util.McpUriTemplateManager;
 import io.modelcontextprotocol.util.McpUriTemplateManagerFactory;
 
 /**
- * Abstract base class for creating callbacks around resource methods.
- *
- * This class provides common functionality for both synchronous and asynchronous resource
- * method callbacks. It contains shared logic for method validation, argument building,
- * and other common operations.
+ * 资源方法回调的抽象基类。
+ * 该类为同步和异步资源方法回调提供了公共功能。
+ * 包含方法验证、参数构建等通用操作的实现。
  *
  * @author Christian Tzolov
  */
@@ -273,13 +272,12 @@ public abstract class AbstractMcpResourceMethodCallback {
 	}
 
 	/**
-	 * Builds arguments for methods with URI variables. This method provides common
-	 * argument building logic for methods with URI variables.
-	 * @param parameters The method parameters
-	 * @param args The arguments array to populate
-	 * @param exchange The server exchange
-	 * @param request The resource request
-	 * @param uriVariableValues Map of URI variable names to their values
+	 * 为包含URI变量的方法构建参数。该方法为包含URI变量的方法提供通用的参数构建逻辑。
+	 * @param parameters 方法参数
+	 * @param args 需要填充的参数数组
+	 * @param exchange 服务器交换对象
+	 * @param request 资源请求对象
+	 * @param uriVariableValues URI变量名称到值的映射
 	 */
 	protected void buildArgsWithUriVariables(Parameter[] parameters, Object[] args, Object exchange,
 			ReadResourceRequest request, Map<String, String> uriVariableValues) {
@@ -298,7 +296,7 @@ public abstract class AbstractMcpResourceMethodCallback {
 			}
 		}
 
-		// Second pass: assign URI variables to the remaining parameters
+		// 2. 将URI变量分配给剩余的参数
 		int variableIndex = 0;
 		for (int i = 0; i < parameters.length; i++) {
 			// Skip parameters that already have values (exchange or request)
@@ -323,12 +321,11 @@ public abstract class AbstractMcpResourceMethodCallback {
 	}
 
 	/**
-	 * Builds arguments for methods without URI variables. This method provides common
-	 * argument building logic for methods without URI variables.
-	 * @param parameters The method parameters
-	 * @param args The arguments array to populate
-	 * @param exchange The server exchange
-	 * @param request The resource request
+	 * 为不包含URI变量的方法构建参数。该方法为不包含URI变量的方法提供通用的参数构建逻辑。
+	 * @param parameters 方法参数
+	 * @param args 需要填充的参数数组
+	 * @param exchange 服务器交换对象
+	 * @param request 资源请求对象
 	 */
 	protected void buildArgsWithoutUriVariables(Parameter[] parameters, Object[] args, Object exchange,
 			ReadResourceRequest request) {

@@ -34,18 +34,15 @@ public final class SyncMcpResourceMethodCallback extends AbstractMcpResourceMeth
 	}
 
 	/**
-	 * Apply the callback to the given exchange and request.
+	 * 将回调应用于给定的交换和请求。
 	 * <p>
-	 * This method extracts URI variable values from the request URI, builds the arguments
-	 * for the method call, invokes the method, and converts the result to a
-	 * ReadResourceResult.
-	 * @param exchange The server exchange, may be null if the method doesn't require it
-	 * @param request The resource request, must not be null
-	 * @return The resource result
-	 * @throws McpResourceMethodException if there is an error invoking the resource
-	 * method
-	 * @throws IllegalArgumentException if the request is null or if URI variable
-	 * extraction fails
+	 * 此方法从请求URI中提取URI变量值，构建方法调用的参数，调用方法，并将结果转换为
+	 * ReadResourceResult。
+	 * @param exchange 服务器交换，如果方法不需要它可以为null
+	 * @param request 资源请求，必须不为null
+	 * @return 资源结果
+	 * @throws McpResourceMethodException 如果调用资源方法时发生错误
+	 * @throws IllegalArgumentException 如果请求为null或URI变量提取失败
 	 */
 	@Override
 	public ReadResourceResult apply(McpSyncServerExchange exchange, ReadResourceRequest request) {
@@ -57,7 +54,8 @@ public final class SyncMcpResourceMethodCallback extends AbstractMcpResourceMeth
 			// Extract URI variable values from the request URI
 			Map<String, String> uriVariableValues = this.uriTemplateManager.extractVariableValues(request.uri());
 
-			// Verify all URI variables were extracted if URI variables are expected
+			// 如果需要URI变量，请验证是否提取了所有URI变量
+
 			if (!this.uriVariables.isEmpty() && uriVariableValues.size() != this.uriVariables.size()) {
 				throw new IllegalArgumentException("Failed to extract all URI variables from request URI: "
 						+ request.uri() + ". Expected variables: " + this.uriVariables + ", but found: "
@@ -67,11 +65,11 @@ public final class SyncMcpResourceMethodCallback extends AbstractMcpResourceMeth
 			// Build arguments for the method call
 			Object[] args = this.buildArgs(this.method, exchange, request, uriVariableValues);
 
-			// Invoke the method
+			// 调用 the method
 			this.method.setAccessible(true);
 			Object result = this.method.invoke(this.bean, args);
 
-			// Convert the result to a ReadResourceResult using the converter
+			// 转换 the result to a ReadResourceResult using the 转换器
 			return this.resultConverter.convertToReadResourceResult(result, request.uri(), this.mimeType,
 					this.contentType);
 		}
