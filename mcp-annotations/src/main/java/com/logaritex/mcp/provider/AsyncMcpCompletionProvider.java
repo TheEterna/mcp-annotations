@@ -2,8 +2,7 @@ package com.logaritex.mcp.provider;
 
 import com.logaritex.mcp.annotation.CompleteAdapter;
 import com.logaritex.mcp.annotation.McpComplete;
-import com.logaritex.mcp.method.complete.AsyncMcpCompleteMethodCallback;
-import com.logaritex.mcp.method.complete.SyncMcpCompleteMethodCallback;
+import com.logaritex.mcp.method.complete.McpCompleteMethodCallback;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.util.Assert;
 import reactor.core.publisher.Mono;
@@ -34,7 +33,7 @@ public class AsyncMcpCompletionProvider {
                             var completeAnnotation = mcpCompleteMethod.getAnnotation(McpComplete.class);
                             var completeRef = CompleteAdapter.asCompleteReference(completeAnnotation, mcpCompleteMethod);
 
-                            var methodCallback = AsyncMcpCompleteMethodCallback.builder()
+                            var methodCallback = McpCompleteMethodCallback.builder()
                                     .method(mcpCompleteMethod)
                                     .bean(completeObject)
                                     .reference(completeRef)

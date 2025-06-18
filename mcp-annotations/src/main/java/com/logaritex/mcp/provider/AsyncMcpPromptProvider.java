@@ -18,11 +18,9 @@ package com.logaritex.mcp.provider;
 
 import com.logaritex.mcp.annotation.McpPrompt;
 import com.logaritex.mcp.annotation.PromptAdaptor;
-import com.logaritex.mcp.method.prompt.AsyncMcpPromptMethodCallback;
-import com.logaritex.mcp.method.prompt.SyncMcpPromptMethodCallback;
+import com.logaritex.mcp.method.prompt.McpPromptMethodCallback;
 import io.modelcontextprotocol.server.McpServerFeatures.AsyncPromptSpecification;
 import io.modelcontextprotocol.util.Assert;
-import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -48,7 +46,7 @@ public class AsyncMcpPromptProvider {
 					var promptAnnotation = mcpPromptMethod.getAnnotation(McpPrompt.class);
 					var mcpPrompt = PromptAdaptor.asPrompt(promptAnnotation, mcpPromptMethod);
 
-					var methodCallback = AsyncMcpPromptMethodCallback.builder()
+					McpPromptMethodCallback methodCallback = McpPromptMethodCallback.builder()
 						.method(mcpPromptMethod)
 						.bean(promptObjects)
 						.prompt(mcpPrompt)

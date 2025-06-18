@@ -18,6 +18,7 @@ package com.logaritex.mcp.provider;
 
 import com.logaritex.mcp.annotation.McpResource;
 import com.logaritex.mcp.method.resource.AsyncMcpResourceMethodCallback;
+import com.logaritex.mcp.method.resource.McpResourceMethodCallback;
 import io.modelcontextprotocol.server.McpServerFeatures.AsyncResourceSpecification;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.util.Assert;
@@ -54,7 +55,7 @@ public class AsyncMcpResourceProvider {
 					String mimeType = resourceAnnotation.mimeType();
 					var mcpResource = new McpSchema.Resource(uri, name, description, mimeType, null);
 
-					AsyncMcpResourceMethodCallback methodCallback = AsyncMcpResourceMethodCallback.builder()
+					McpResourceMethodCallback methodCallback = McpResourceMethodCallback.builder()
 						.method(mcpResourceMethod)
 						.bean(resourceObject)
 						.resource(mcpResource)
