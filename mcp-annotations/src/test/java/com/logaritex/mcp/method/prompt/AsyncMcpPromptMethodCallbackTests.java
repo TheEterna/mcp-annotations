@@ -144,18 +144,22 @@ public class AsyncMcpPromptMethodCallbackTests {
 				new PromptArgument("age", "User's age", false)));
 	}
 
-	@Test
-	public void testInvalidNonMonoReturnType() throws Exception {
-		TestPromptProvider provider = new TestPromptProvider();
-		Method method = TestPromptProvider.class.getMethod("getPromptWithRequest", GetPromptRequest.class);
-
-		Prompt prompt = createTestPrompt("greeting", "A simple greeting prompt");
-
-		assertThatThrownBy(
-				() -> AsyncMcpPromptMethodCallback.builder().method(method).bean(provider).prompt(prompt).build())
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("Method must return a Mono<T>");
-	}
+	/**
+	 * 目前不需要该测试用例, 异步同样支持pojo返回类型
+	 * @throws Exception
+	 */
+//	@Test
+//	public void testInvalidNonMonoReturnType() throws Exception {
+//		TestPromptProvider provider = new TestPromptProvider();
+//		Method method = TestPromptProvider.class.getMethod("getPromptWithRequest", GetPromptRequest.class);
+//
+//		Prompt prompt = createTestPrompt("greeting", "A simple greeting prompt");
+//
+//		assertThatThrownBy(
+//				() -> AsyncMcpPromptMethodCallback.builder().method(method).bean(provider).prompt(prompt).build())
+//			.isInstanceOf(IllegalArgumentException.class)
+//			.hasMessageContaining("Method must return either GetPromptResult, List<PromptMessage>");
+//	}
 
 	@Test
 	public void testCallbackWithMonoPromptResult() throws Exception {

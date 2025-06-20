@@ -18,6 +18,7 @@ import io.modelcontextprotocol.util.Assert;
 import io.modelcontextprotocol.util.DeafaultMcpUriTemplateManagerFactory;
 import io.modelcontextprotocol.util.McpUriTemplateManager;
 import io.modelcontextprotocol.util.McpUriTemplateManagerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * Abstract base class for creating callbacks around complete methods.
@@ -114,7 +115,26 @@ public abstract class AbstractMcpCompleteMethodCallback {
 	 * @param method The method to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
-	protected abstract void validateReturnType(Method method);
+	protected void validateReturnType(Method method) {
+		// Merge logic for synchronous and asynchronous methods
+		// 合并异步和同步的逻辑
+		Class<?> returnType = method.getReturnType();
+
+		boolean validReturnType =
+				   McpSchema.CompleteResult.class.isAssignableFrom(returnType)
+				|| McpSchema.CompleteResult.CompleteCompletion.class.isAssignableFrom(returnType)
+				|| List.class.isAssignableFrom(returnType)
+				|| String.class.isAssignableFrom(returnType) || Mono.class.isAssignableFrom(returnType)
+				|| Mono.class.isAssignableFrom(returnType);
+
+
+		if (!validReturnType) {
+			throw new IllegalArgumentException(
+					"Method must return either CompleteResult, CompleteCompletion, List<String>, "
+							+ "String, or Mono<T>: " + method.getName() + " in " + method.getDeclaringClass().getName()
+							+ " returns " + returnType.getName());
+		}
+	}
 
 	/**
 	 * Validates method parameters. This method provides common validation logic and

@@ -135,21 +135,7 @@ public final class AsyncMcpResourceMethodCallback extends AbstractMcpResourceMet
 	 * @param method The method to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
 
-		boolean validReturnType = ReadResourceResult.class.isAssignableFrom(returnType)
-				|| List.class.isAssignableFrom(returnType) || ResourceContents.class.isAssignableFrom(returnType)
-				|| String.class.isAssignableFrom(returnType) || Mono.class.isAssignableFrom(returnType);
-
-		if (!validReturnType) {
-			throw new IllegalArgumentException(
-					"Method must return either ReadResourceResult, List<ResourceContents>, List<String>, "
-							+ "ResourceContents, String, or Mono<T>: " + method.getName() + " in "
-							+ method.getDeclaringClass().getName() + " returns " + returnType.getName());
-		}
-	}
 
 	/**
 	 * Checks if a parameter type is compatible with the exchange type.

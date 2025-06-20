@@ -9,6 +9,7 @@ import java.util.function.BiFunction;
 
 import com.logaritex.mcp.annotation.McpPrompt;
 import io.modelcontextprotocol.server.McpAsyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptResult;
 import reactor.core.publisher.Mono;
@@ -42,7 +43,7 @@ public final class AsyncMcpPromptMethodCallback extends AbstractMcpPromptMethodC
 	 * @throws IllegalArgumentException if the request is null
 	 */
 	@Override
-	public Mono<GetPromptResult> apply(McpAsyncServerExchange exchange, GetPromptRequest request) {
+	public Mono<McpSchema.GetPromptResult> apply(McpAsyncServerExchange exchange, McpSchema.GetPromptRequest request) {
 		if (request == null) {
 			return Mono.error(new IllegalArgumentException("Request must not be null"));
 		}
@@ -59,7 +60,7 @@ public final class AsyncMcpPromptMethodCallback extends AbstractMcpPromptMethodC
 				// Handle the result based on its type
 				if (result instanceof Mono<?>) {
 					// If the result is already a Mono, map it to a GetPromptResult
-					return ((Mono<?>) result).map(r -> convertToGetPromptResult(r));
+					return ((Mono<?>) result).map((r) -> convertToGetPromptResult(r));
 				}
 				else {
 					// Otherwise, convert the result to a GetPromptResult and wrap in a
@@ -69,14 +70,13 @@ public final class AsyncMcpPromptMethodCallback extends AbstractMcpPromptMethodC
 			}
 			catch (Exception e) {
 				return Mono
-					.error(new McpPromptMethodException("Error invoking prompt method: " + this.method.getName(), e));
+						.error(new McpPromptMethodException("Error invoking prompt method: " + this.method.getName(), e));
 			}
 		});
 	}
-
 	/**
 	 * Validates that the method return type is compatible with the prompt callback.
-	 * @param method The method to validate
+	 * @param paramType The paramType to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
 	@Override
@@ -84,18 +84,7 @@ public final class AsyncMcpPromptMethodCallback extends AbstractMcpPromptMethodC
 		return McpAsyncServerExchange.class.isAssignableFrom(paramType);
 	}
 
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
 
-		// For AsyncMcpPromptMethodCallback, the method must return a Mono
-		if (!Mono.class.isAssignableFrom(returnType)) {
-			throw new IllegalArgumentException(
-					"Method must return a Mono<T> where T is one of GetPromptResult, List<PromptMessage>, "
-							+ "List<String>, PromptMessage, or String: " + method.getName() + " in "
-							+ method.getDeclaringClass().getName() + " returns " + returnType.getName());
-		}
-	}
 
 	/**
 	 * Builder for creating AsyncMcpPromptMethodCallback instances.

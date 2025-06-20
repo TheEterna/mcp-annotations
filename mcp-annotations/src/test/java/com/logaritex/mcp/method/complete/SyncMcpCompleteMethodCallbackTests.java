@@ -360,7 +360,7 @@ public class SyncMcpCompleteMethodCallbackTests {
 			.prompt("test-prompt")
 			.build()).isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining(
-					"Method must return either CompleteResult, CompleteCompletion, List<String>, or String");
+					"Method must return either CompleteResult, CompleteCompletion, List<String>, String, or Mono<T>: ");
 	}
 
 	@Test

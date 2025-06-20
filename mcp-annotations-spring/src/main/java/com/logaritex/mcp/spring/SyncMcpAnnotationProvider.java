@@ -16,15 +16,16 @@
 package com.logaritex.mcp.spring;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.logaritex.mcp.provider.AsyncMcpSamplingProvider;
-import com.logaritex.mcp.provider.SyncMcpCompletionProvider;
+import com.logaritex.mcp.provider.McpCompletionProvider;
 import com.logaritex.mcp.provider.SyncMcpLoggingConsumerProvider;
-import com.logaritex.mcp.provider.SyncMcpPromptProvider;
-import com.logaritex.mcp.provider.SyncMcpResourceProvider;
+import com.logaritex.mcp.provider.McpPromptProvider;
+import com.logaritex.mcp.provider.McpResourceProvider;
 import com.logaritex.mcp.provider.SyncMcpSamplingProvider;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncPromptSpecification;
@@ -42,7 +43,7 @@ import org.springframework.util.ReflectionUtils;
  */
 public class SyncMcpAnnotationProvider {
 
-	private static class SpringAiSyncMcpCompletionProvider extends SyncMcpCompletionProvider {
+	private static class SpringAiSyncMcpCompletionProvider extends McpCompletionProvider {
 
 		public SpringAiSyncMcpCompletionProvider(List<Object> completeObjects) {
 			super(completeObjects);
@@ -50,13 +51,19 @@ public class SyncMcpAnnotationProvider {
 
 		@Override
 		protected Method[] doGetClassMethods(Object bean) {
-			return ReflectionUtils
-				.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+			Method[] methods = ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+
+			Arrays.sort(methods, Comparator
+					.comparing(Method::getName)
+					.thenComparing(method -> Arrays.toString(method.getParameterTypes())));
+			return methods;
 		}
+
 
 	};
 
-	private static class SpringAiSyncMcpPromptProvider extends SyncMcpPromptProvider {
+	private static class SpringAiSyncMcpPromptProvider extends McpPromptProvider {
 
 		public SpringAiSyncMcpPromptProvider(List<Object> promptObjects) {
 			super(promptObjects);
@@ -64,13 +71,18 @@ public class SyncMcpAnnotationProvider {
 
 		@Override
 		protected Method[] doGetClassMethods(Object bean) {
-			return ReflectionUtils
-				.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+			Method[] methods = ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+
+			Arrays.sort(methods, Comparator
+					.comparing(Method::getName)
+					.thenComparing(method -> Arrays.toString(method.getParameterTypes())));
+			return methods;
 		}
 
 	};
 
-	private static class SpringAiSyncMcpResourceProvider extends SyncMcpResourceProvider {
+	private static class SpringAiSyncMcpResourceProvider extends McpResourceProvider {
 
 		public SpringAiSyncMcpResourceProvider(List<Object> resourceObjects) {
 			super(resourceObjects);
@@ -78,9 +90,15 @@ public class SyncMcpAnnotationProvider {
 
 		@Override
 		protected Method[] doGetClassMethods(Object bean) {
-			return ReflectionUtils
-				.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+			Method[] methods = ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+
+			Arrays.sort(methods, Comparator
+					.comparing(Method::getName)
+					.thenComparing(method -> Arrays.toString(method.getParameterTypes())));
+			return methods;
 		}
+
 
 	}
 
@@ -92,8 +110,12 @@ public class SyncMcpAnnotationProvider {
 
 		@Override
 		protected Method[] doGetClassMethods(Object bean) {
-			return ReflectionUtils
-				.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+			Method[] methods = ReflectionUtils
+					.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
+			Arrays.sort(methods, Comparator
+					.comparing(Method::getName)
+					.thenComparing(method -> Arrays.toString(method.getParameterTypes())));
+			return methods;
 		}
 
 	}
@@ -112,44 +134,36 @@ public class SyncMcpAnnotationProvider {
 
 	}
 
-	private static class SpringAiAsyncMcpSamplingProvider extends AsyncMcpSamplingProvider {
-
-		public SpringAiAsyncMcpSamplingProvider(List<Object> samplingObjects) {
-			super(samplingObjects);
-		}
-
-		@Override
-		protected Method[] doGetClassMethods(Object bean) {
-			return ReflectionUtils
-				.getDeclaredMethods(AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass());
-		}
-
-	}
 
 	public static List<SyncCompletionSpecification> createSyncCompleteSpecifications(List<Object> completeObjects) {
-		return new SpringAiSyncMcpCompletionProvider(completeObjects).getCompleteSpecifications();
+		return new SpringAiSyncMcpCompletionProvider(completeObjects).getSyncCompleteSpecifications();
 	}
 
 	public static List<SyncPromptSpecification> createSyncPromptSpecifications(List<Object> promptObjects) {
-		return new SpringAiSyncMcpPromptProvider(promptObjects).getPromptSpecifications();
+		return new SpringAiSyncMcpPromptProvider(promptObjects).getSyncPromptSpecifications();
 	}
 
 	public static List<SyncResourceSpecification> createSyncResourceSpecifications(List<Object> resourceObjects) {
-		return new SpringAiSyncMcpResourceProvider(resourceObjects).getResourceSpecifications();
+		return new SpringAiSyncMcpResourceProvider(resourceObjects).getSyncResourceSpecifications();
 	}
 
+	/**
+	 * fixme 未更新, 存在问题, 同步提供器无法解析Mono
+	 * @param loggingObjects
+	 * @return
+	 */
 	public static List<Consumer<LoggingMessageNotification>> createSyncLoggingConsumers(List<Object> loggingObjects) {
 		return new SpringAiSyncMcpLoggingConsumerProvider(loggingObjects).getLoggingConsumers();
 	}
 
+	/**
+	 * fixme 未更新, 存在问题, 同步提供器无法解析Mono
+	 * @param samplingObjects
+	 * @return
+	 */
 	public static Function<CreateMessageRequest, CreateMessageResult> createSyncSamplingHandler(
 			List<Object> samplingObjects) {
 		return new SpringAiSyncMcpSamplingProvider(samplingObjects).getSamplingHandler();
-	}
-
-	public static Function<CreateMessageRequest, Mono<CreateMessageResult>> createAsyncSamplingHandler(
-			List<Object> samplingObjects) {
-		return new SpringAiAsyncMcpSamplingProvider(samplingObjects).getSamplingHandler();
 	}
 
 }

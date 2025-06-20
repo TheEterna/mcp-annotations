@@ -399,7 +399,7 @@ public class SyncMcpPromptMethodCallbackTests {
 		assertThatThrownBy(
 				() -> SyncMcpPromptMethodCallback.builder().method(method).bean(provider).prompt(prompt).build())
 			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("Method must return either GetPromptResult, List<PromptMessage>");
+			.hasMessageContaining("Method must return either GetPromptResult, List<PromptMessage>, PromptMessage, List<String>, String, or Mono<T>");
 	}
 
 	@Test

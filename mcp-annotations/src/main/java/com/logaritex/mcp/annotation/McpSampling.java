@@ -11,35 +11,34 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods that handle sampling requests from MCP servers.
+ * 用于处理来自 MCP 服务器的采样请求的方法注解。
  *
  * <p>
- * Methods annotated with this annotation can be used to process sampling requests from
- * MCP servers. The methods can have one of two signatures:
+ * 被此注解标记的方法可用于处理来自 MCP 服务器的采样请求。方法可以具有以下两种签名之一：
  * <ul>
- * <li>A single parameter of type {@code CreateMessageRequest}
- * <li>Multiple parameters corresponding to the fields of {@code CreateMessageRequest}
+ * <li>一个单独的 {@code CreateMessageRequest} 类型参数
+ * <li>多个参数，分别对应 {@code CreateMessageRequest} 的字段
  * </ul>
  *
  * <p>
- * For synchronous handlers, the method must return {@code CreateMessageResult}. For
- * asynchronous handlers, the method must return {@code Mono<CreateMessageResult>}.
+ * 对于同步处理器，方法必须返回 {@code CreateMessageResult}。对于异步处理器，
+ * 方法必须返回 {@code Mono<CreateMessageResult>}。
  *
  * <p>
- * Example usage: <pre>{@code
+ * 使用示例：<pre>{@code
  * &#64;McpSampling
  * public CreateMessageResult handleSamplingRequest(CreateMessageRequest request) {
- *     // Process the request and return a result
+ *     // 处理请求并返回结果
  *     return CreateMessageResult.builder()
- *         .message("Generated response")
+ *         .message("生成的响应")
  *         .build();
  * }
  *
  * &#64;McpSampling
  * public Mono<CreateMessageResult> handleAsyncSamplingRequest(CreateMessageRequest request) {
- *     // Process the request asynchronously and return a result
+ *     // 异步处理请求并返回结果
  *     return Mono.just(CreateMessageResult.builder()
- *         .message("Generated response")
+ *         .message("生成的响应")
  *         .build());
  * }
  * }</pre>

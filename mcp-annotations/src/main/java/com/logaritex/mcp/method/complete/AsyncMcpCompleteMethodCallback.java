@@ -106,8 +106,7 @@ public final class AsyncMcpCompleteMethodCallback extends AbstractMcpCompleteMet
 			return new CompleteResult((CompleteCompletion) result);
 		}
 
-		if (result instanceof List) {
-			List<?> list = (List<?>) result;
+		if (result instanceof List list) {
 			List<String> values = new ArrayList<>();
 
 			for (Object item : list) {
@@ -164,26 +163,6 @@ public final class AsyncMcpCompleteMethodCallback extends AbstractMcpCompleteMet
 		return new Builder();
 	}
 
-	/**
-	 * Validates that the method return type is compatible with the complete callback.
-	 * @param method The method to validate
-	 * @throws IllegalArgumentException if the return type is not compatible
-	 */
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
-
-		boolean validReturnType = CompleteResult.class.isAssignableFrom(returnType)
-				|| CompleteCompletion.class.isAssignableFrom(returnType) || List.class.isAssignableFrom(returnType)
-				|| String.class.isAssignableFrom(returnType) || Mono.class.isAssignableFrom(returnType);
-
-		if (!validReturnType) {
-			throw new IllegalArgumentException(
-					"Method must return either CompleteResult, CompleteCompletion, List<String>, "
-							+ "String, or Mono<T>: " + method.getName() + " in " + method.getDeclaringClass().getName()
-							+ " returns " + returnType.getName());
-		}
-	}
 
 	/**
 	 * Checks if a parameter type is compatible with the exchange type.

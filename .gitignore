@@ -87,3 +87,4 @@ package.json
 s3.properties
 .*.swp
 .DS_Store
+*.xml
