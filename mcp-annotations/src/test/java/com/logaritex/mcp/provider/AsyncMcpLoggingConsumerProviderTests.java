@@ -89,17 +89,16 @@ public class AsyncMcpLoggingConsumerProviderTests {
 
 		// Test the second consumer (Mono return type with parameters)
 		StepVerifier.create(consumers.get(1).apply(notification)).verifyComplete();
+		// Verify that the method was called
+		assertThat(loggingHandler.lastNotification).isEqualTo(notification);
 
+		// Test the third consumer (void return type)
+		StepVerifier.create(consumers.get(2).apply(notification)).verifyComplete();
 		// Verify that the method was called
 		assertThat(loggingHandler.lastLevel).isEqualTo(notification.level());
 		assertThat(loggingHandler.lastLogger).isEqualTo(notification.logger());
 		assertThat(loggingHandler.lastData).isEqualTo(notification.data());
 
-		// Test the third consumer (void return type)
-		StepVerifier.create(consumers.get(2).apply(notification)).verifyComplete();
-
-		// Verify that the method was called
-		assertThat(loggingHandler.lastNotification).isEqualTo(notification);
 	}
 
 	@Test

@@ -14,6 +14,7 @@ import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
+import reactor.core.publisher.Mono;
 
 /**
  * Class for creating BiFunction callbacks around resource methods.
@@ -65,11 +66,17 @@ public final class SyncMcpResourceMethodCallback extends AbstractMcpResourceMeth
 			// Build arguments for the method call
 			Object[] args = this.buildArgs(this.method, exchange, request, uriVariableValues);
 
-			// 调用 the method
+			// invoke the method
 			this.method.setAccessible(true);
 			Object result = this.method.invoke(this.bean, args);
 
-			// 转换 the result to a ReadResourceResult using the 转换器
+			// convert Mono
+			if (result instanceof Mono<?>) {
+				// If the result is already a Mono, map it to a GetPromptResult
+				result = ((Mono<?>) result).block();
+			}
+
+			// Convert the result to a ReadResourceResult using the 转换器
 			return this.resultConverter.convertToReadResourceResult(result, request.uri(), this.mimeType,
 					this.contentType);
 		}
@@ -113,26 +120,6 @@ public final class SyncMcpResourceMethodCallback extends AbstractMcpResourceMeth
 		return new Builder();
 	}
 
-	/**
-	 * Validates that the method return type is compatible with the resource callback.
-	 * @param method The method to validate
-	 * @throws IllegalArgumentException if the return type is not compatible
-	 */
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
-
-		boolean validReturnType = ReadResourceResult.class.isAssignableFrom(returnType)
-				|| List.class.isAssignableFrom(returnType) || ResourceContents.class.isAssignableFrom(returnType)
-				|| String.class.isAssignableFrom(returnType);
-
-		if (!validReturnType) {
-			throw new IllegalArgumentException(
-					"Method must return either ReadResourceResult, List<ResourceContents>, List<String>, "
-							+ "ResourceContents, or String: " + method.getName() + " in "
-							+ method.getDeclaringClass().getName() + " returns " + returnType.getName());
-		}
-	}
 
 	/**
 	 * Checks if a parameter type is compatible with the exchange type.

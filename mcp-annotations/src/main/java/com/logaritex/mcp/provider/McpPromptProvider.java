@@ -18,26 +18,30 @@ package com.logaritex.mcp.provider;
 
 import com.logaritex.mcp.annotation.McpPrompt;
 import com.logaritex.mcp.annotation.PromptAdaptor;
-import com.logaritex.mcp.method.prompt.McpPromptMethodCallback;
+import com.logaritex.mcp.method.prompt.AsyncMcpPromptMethodCallback;
+import com.logaritex.mcp.method.prompt.SyncMcpPromptMethodCallback;
 import io.modelcontextprotocol.server.McpServerFeatures.AsyncPromptSpecification;
+import io.modelcontextprotocol.server.McpServerFeatures.SyncPromptSpecification;
 import io.modelcontextprotocol.util.Assert;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
 /**
  */
-public class AsyncMcpPromptProvider {
+public class McpPromptProvider {
 
 	private final List<Object> promptObjects;
 
-	public AsyncMcpPromptProvider(List<Object> promptObjects) {
+	public McpPromptProvider(List<Object> promptObjects) {
 		Assert.notNull(promptObjects, "promptObjects cannot be null");
 		this.promptObjects = promptObjects;
 	}
 
-	public List<AsyncPromptSpecification> getPromptSpecifications() {
+	public List<AsyncPromptSpecification> getAsyncPromptSpecifications() {
 
 		List<AsyncPromptSpecification> asyncPromptSpecification = this.promptObjects.stream()
 			.map(promptObjects -> Stream.of(doGetClassMethods(promptObjects))
@@ -46,19 +50,42 @@ public class AsyncMcpPromptProvider {
 					var promptAnnotation = mcpPromptMethod.getAnnotation(McpPrompt.class);
 					var mcpPrompt = PromptAdaptor.asPrompt(promptAnnotation, mcpPromptMethod);
 
-					McpPromptMethodCallback methodCallback = McpPromptMethodCallback.builder()
+					AsyncMcpPromptMethodCallback asyncMcpPromptMethodCallback = AsyncMcpPromptMethodCallback.builder()
 						.method(mcpPromptMethod)
 						.bean(promptObjects)
 						.prompt(mcpPrompt)
 						.build();
 
-					return new AsyncPromptSpecification(mcpPrompt, methodCallback);
+					return new AsyncPromptSpecification(mcpPrompt, asyncMcpPromptMethodCallback);
 				})
 				.toList())
 			.flatMap(List::stream)
 			.toList();
 
 		return asyncPromptSpecification;
+	}
+	public List<SyncPromptSpecification> getSyncPromptSpecifications() {
+
+		List<SyncPromptSpecification> syncPromptSpecification = this.promptObjects.stream()
+			.map(promptObjects -> Stream.of(doGetClassMethods(promptObjects))
+				.filter(method -> method.isAnnotationPresent(McpPrompt.class))
+				.map(mcpPromptMethod -> {
+					var promptAnnotation = mcpPromptMethod.getAnnotation(McpPrompt.class);
+					var mcpPrompt = PromptAdaptor.asPrompt(promptAnnotation, mcpPromptMethod);
+
+					SyncMcpPromptMethodCallback syncMcpPromptMethodCallback = SyncMcpPromptMethodCallback.builder()
+						.method(mcpPromptMethod)
+						.bean(promptObjects)
+						.prompt(mcpPrompt)
+						.build();
+
+					return new SyncPromptSpecification(mcpPrompt, syncMcpPromptMethodCallback);
+				})
+				.toList())
+			.flatMap(List::stream)
+			.toList();
+
+		return syncPromptSpecification;
 	}
 
 	/**
@@ -67,7 +94,11 @@ public class AsyncMcpPromptProvider {
 	 * @return the methods of the bean class
 	 */
 	protected Method[] doGetClassMethods(Object bean) {
-		return bean.getClass().getDeclaredMethods();
+		Method[] methods = bean.getClass().getDeclaredMethods();
+		Arrays.sort(methods, Comparator
+				.comparing(Method::getName)
+				.thenComparing(method -> Arrays.toString(method.getParameterTypes())));
+		return methods;
 	}
 
 }

@@ -10,11 +10,13 @@ import java.util.function.BiFunction;
 
 import com.logaritex.mcp.annotation.McpPrompt;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptResult;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * 用于创建围绕提示方法的BiFunction回调的类。
@@ -45,7 +47,7 @@ public final class SyncMcpPromptMethodCallback extends AbstractMcpPromptMethodCa
 	 * @throws IllegalArgumentException if the request is null
 	 */
 	@Override
-	public GetPromptResult apply(McpSyncServerExchange exchange, GetPromptRequest request) {
+	public McpSchema.GetPromptResult apply(McpSyncServerExchange exchange, McpSchema.GetPromptRequest request) {
 		if (request == null) {
 			throw new IllegalArgumentException("Request must not be null");
 		}
@@ -57,20 +59,24 @@ public final class SyncMcpPromptMethodCallback extends AbstractMcpPromptMethodCa
 			// Invoke the method
 			this.method.setAccessible(true);
 			Object result = this.method.invoke(this.bean, args);
-
+			if (result instanceof Mono<?>) {
+				// If the result is already a Mono, map it to a GetPromptResult
+				result = ((Mono<?>) result).block();
+			}
 			// Convert the result to a GetPromptResult
-			GetPromptResult promptResult = this.convertToGetPromptResult(result);
+			return this.convertToGetPromptResult(result);
 
-			return promptResult;
 		}
 		catch (Exception e) {
 			throw new McpPromptMethodException("Error invoking prompt method: " + this.method.getName(), e);
 		}
 	}
 
+
+
 	/**
 	 * Validates that the method return type is compatible with the prompt callback.
-	 * @param method The method to validate
+	 * @param paramType The paramType to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
 	@Override
@@ -78,20 +84,6 @@ public final class SyncMcpPromptMethodCallback extends AbstractMcpPromptMethodCa
 		return McpSyncServerExchange.class.isAssignableFrom(paramType);
 	}
 
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
-
-		boolean validReturnType = GetPromptResult.class.isAssignableFrom(returnType)
-				|| List.class.isAssignableFrom(returnType) || PromptMessage.class.isAssignableFrom(returnType)
-				|| String.class.isAssignableFrom(returnType);
-
-		if (!validReturnType) {
-			throw new IllegalArgumentException("Method must return either GetPromptResult, List<PromptMessage>, "
-					+ "List<String>, PromptMessage, or String: " + method.getName() + " in "
-					+ method.getDeclaringClass().getName() + " returns " + returnType.getName());
-		}
-	}
 
 	/**
 	 * Builder for creating SyncMcpPromptMethodCallback instances.
@@ -99,7 +91,7 @@ public final class SyncMcpPromptMethodCallback extends AbstractMcpPromptMethodCa
 	 * This builder provides a fluent API for constructing SyncMcpPromptMethodCallback
 	 * instances with the required parameters.
 	 */
-	public static class Builder extends AbstractBuilder<Builder, SyncMcpPromptMethodCallback> {
+	public static class Builder extends AbstractMcpPromptMethodCallback.AbstractBuilder<Builder, SyncMcpPromptMethodCallback> {
 
 		/**
 		 * Build the callback.

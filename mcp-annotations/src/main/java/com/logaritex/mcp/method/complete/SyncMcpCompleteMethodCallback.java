@@ -15,6 +15,7 @@ import io.modelcontextprotocol.spec.McpSchema.CompleteRequest;
 import io.modelcontextprotocol.spec.McpSchema.CompleteResult;
 import io.modelcontextprotocol.spec.McpSchema.CompleteResult.CompleteCompletion;
 import io.modelcontextprotocol.util.DeafaultMcpUriTemplateManagerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * Class for creating BiFunction callbacks around complete methods.
@@ -59,7 +60,9 @@ public final class SyncMcpCompleteMethodCallback extends AbstractMcpCompleteMeth
 			// Invoke the method
 			this.method.setAccessible(true);
 			Object result = this.method.invoke(this.bean, args);
-
+			if (result instanceof Mono<?>) {
+				result = ((Mono<?>) result).block();
+			}
 			// Convert the result to a CompleteResult
 			return convertToCompleteResult(result);
 		}
@@ -77,6 +80,7 @@ public final class SyncMcpCompleteMethodCallback extends AbstractMcpCompleteMeth
 		if (result == null) {
 			return new CompleteResult(new CompleteCompletion(List.of(), 0, false));
 		}
+
 
 		if (result instanceof CompleteResult) {
 			return (CompleteResult) result;
@@ -144,26 +148,7 @@ public final class SyncMcpCompleteMethodCallback extends AbstractMcpCompleteMeth
 		return new Builder();
 	}
 
-	/**
-	 * Validates that the method return type is compatible with the complete callback.
-	 * @param method The method to validate
-	 * @throws IllegalArgumentException if the return type is not compatible
-	 */
-	@Override
-	protected void validateReturnType(Method method) {
-		Class<?> returnType = method.getReturnType();
 
-		boolean validReturnType = CompleteResult.class.isAssignableFrom(returnType)
-				|| CompleteCompletion.class.isAssignableFrom(returnType) || List.class.isAssignableFrom(returnType)
-				|| String.class.isAssignableFrom(returnType);
-
-		if (!validReturnType) {
-			throw new IllegalArgumentException(
-					"Method must return either CompleteResult, CompleteCompletion, List<String>, " + "or String: "
-							+ method.getName() + " in " + method.getDeclaringClass().getName() + " returns "
-							+ returnType.getName());
-		}
-	}
 
 	/**
 	 * Checks if a parameter type is compatible with the exchange type.

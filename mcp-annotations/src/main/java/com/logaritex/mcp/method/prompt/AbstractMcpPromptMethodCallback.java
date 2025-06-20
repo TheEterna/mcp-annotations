@@ -8,12 +8,17 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
+import io.modelcontextprotocol.server.McpAsyncServerExchange;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptResult;
 import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
 import io.modelcontextprotocol.util.Assert;
+import reactor.core.publisher.Mono;
 
 /**
  * Abstract base class for creating callbacks around prompt methods.
@@ -63,8 +68,24 @@ public abstract class AbstractMcpPromptMethodCallback {
 	 * @param method The method to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
-	protected abstract void validateReturnType(Method method);
+	protected void validateReturnType(Method method) {
+		// Merge logic for synchronous and asynchronous methods
+		// 合并异步和同步的逻辑
+		Class<?> returnType = method.getReturnType();
 
+		boolean validReturnType = McpSchema.GetPromptResult.class.isAssignableFrom(returnType)
+				|| List.class.isAssignableFrom(returnType)
+				|| McpSchema.PromptMessage.class.isAssignableFrom(returnType)
+				|| String.class.isAssignableFrom(returnType)
+				|| Mono.class.isAssignableFrom(returnType);
+
+		if (!validReturnType) {
+			throw new IllegalArgumentException(
+					"Method must return either GetPromptResult, List<PromptMessage>, PromptMessage, List<String>, "
+							+ "String, or Mono<T>: " + method.getName() + " in " + method.getDeclaringClass().getName()
+							+ " returns " + returnType.getName());
+		}
+	}
 	/**
 	 * Checks if a parameter type is compatible with the exchange type.
 	 * @param paramType The parameter type to check
@@ -124,7 +145,7 @@ public abstract class AbstractMcpPromptMethodCallback {
 	 * @param request The prompt request
 	 * @return An array of arguments for the method invocation
 	 */
-	protected Object[] buildArgs(Method method, Object exchange, GetPromptRequest request) {
+	public Object[] buildArgs(Method method, Object exchange, GetPromptRequest request) {
 		java.lang.reflect.Parameter[] parameters = method.getParameters();
 		Object[] args = new Object[parameters.length];
 

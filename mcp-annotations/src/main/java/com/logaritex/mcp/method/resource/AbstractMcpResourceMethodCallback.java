@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.modelcontextprotocol.server.McpAsyncServerExchange;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
 import io.modelcontextprotocol.util.Assert;
 import io.modelcontextprotocol.util.DeafaultMcpUriTemplateManagerFactory;
 import io.modelcontextprotocol.util.McpUriTemplateManager;
 import io.modelcontextprotocol.util.McpUriTemplateManagerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * 资源方法回调的抽象基类。
@@ -127,8 +130,20 @@ public abstract class AbstractMcpResourceMethodCallback {
 	 * @param method The method to validate
 	 * @throws IllegalArgumentException if the return type is not compatible
 	 */
-	protected abstract void validateReturnType(Method method);
+	protected void validateReturnType(Method method) {
+		Class<?> returnType = method.getReturnType();
 
+		boolean validReturnType = McpSchema.ReadResourceResult.class.isAssignableFrom(returnType)
+				|| List.class.isAssignableFrom(returnType) || McpSchema.ResourceContents.class.isAssignableFrom(returnType)
+				|| String.class.isAssignableFrom(returnType) || Mono.class.isAssignableFrom(returnType);
+
+		if (!validReturnType) {
+			throw new IllegalArgumentException(
+					"Method must return either ReadResourceResult, List<ResourceContents>, List<String>, "
+							+ "ResourceContents, String, or Mono<T>: " + method.getName() + " in "
+							+ method.getDeclaringClass().getName() + " returns " + returnType.getName());
+		}
+	}
 	/**
 	 * Validates method parameters when no URI variables are present. This method provides
 	 * common validation logic and delegates exchange type checking to subclasses.
