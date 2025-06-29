@@ -344,23 +344,16 @@ public abstract class AbstractMcpToolMethodCallback {
          * @param tool The Tool annotation
          * @return This builder
          */
-        public T tool(McpTool tool) {
-            // No additional configuration needed from the annotation at this time
-            this.name = tool.name();
-            this.description = tool.description();
-            this.mineType = tool.mineType();
+        public T toolAnnotation(McpTool tool) {
+            if (tool == null) {
+                return (T) this;
+            }
             this.annotations = new McpSchema.ToolAnnotations(tool.title(),
                     tool.readOnlyHint(),
                     tool.destructiveHint(),
                     tool.idempotentHint(),
                     tool.openWorldHint(),
                     tool.returnDirect());
-            try {
-                // 使用 Constructor.newInstance() 替代 Class.newInstance()
-                this.converter = tool.converter().getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("无法实例化转换器", e);
-            }
 
             return (T) this;
         }
