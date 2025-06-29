@@ -75,7 +75,7 @@ public class McpResourceProvider {
                             String name = getName(mcpResourceMethod, resourceAnnotation);
                             String description = resourceAnnotation.description();
                             String mimeType = resourceAnnotation.mimeType();
-                            var mcpResource = new McpSchema.Resource(uri, name, description, mimeType, null);
+                            var mcpResource = new McpSchema.Resource(uri, name, description, mimeType,null, null);
 
                             SyncMcpResourceMethodCallback methodCallback = SyncMcpResourceMethodCallback.builder()
                                     .method(mcpResourceMethod)

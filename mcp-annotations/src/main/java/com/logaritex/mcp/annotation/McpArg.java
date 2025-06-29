@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a method parameter as a MCP Argument.
- *
+ * 在 resource 和 prompt 功能里可以作为参数
+ * 在Tool里可以标识为mcp的参数, 比如exchange 和 上下文Map(由于类型擦除, 无法准确注入, 故使用该注解)
  * @author Christian Tzolov
  */
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.PARAMETER })

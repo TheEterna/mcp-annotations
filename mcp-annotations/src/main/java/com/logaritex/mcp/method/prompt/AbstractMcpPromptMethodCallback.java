@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import com.logaritex.mcp.annotation.McpArg;
 import io.modelcontextprotocol.server.McpAsyncServerExchange;
 import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -164,7 +165,9 @@ public abstract class AbstractMcpPromptMethodCallback {
 			}
 			else {
 				// For individual argument parameters, extract from the request arguments
-				String paramName = param.getName();
+				McpArg arg = param.getAnnotation(McpArg.class);
+				String paramName = arg != null && !arg.name().isBlank() ? arg.name() : param.getName();
+
 				if (request.arguments() != null && request.arguments().containsKey(paramName)) {
 					Object argValue = request.arguments().get(paramName);
 					args[i] = convertArgumentValue(argValue, paramType);
